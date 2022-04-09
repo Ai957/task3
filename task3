@@ -1,0 +1,132 @@
+<?php
+//Clean function
+function Clean($input){
+    $input = trim($input);
+    $input = strip_tags($input);
+    $input = stripslashes($input);
+    return $input;
+}
+
+if($_SERVER['REQUEST_METHOD'] == "POST"){
+
+    # Form inputs
+   $name = Clean($_POST['name']);
+   $email = Clean($_POST['email']);
+   $password = Clean($_POST['password']);
+   $address  = Clean($_POST['address']);
+   $gender = Clean($_POST["gender"]);
+   $linkedin = Clean($_POST['linkedinUrl']);
+   //cv file
+   $file = Clean($_POST['file']);
+
+   //Errors Array
+  $errors = []; 
+
+  # Validate NAME 
+  if(empty($name)){
+
+    $errors['name']  = "Name is required!"; 
+  } 
+  elseif(!is_string($name)){
+        $errors['name']  = "Name must be string"; 
+    }
+
+  # VALIDATE EMAIL 
+  if(empty($email)){
+    $errors['email'] = "Required"; 
+  } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $errors['email'] = "Invalid email format";
+  }
+
+    # VALIDATE password 
+    if(empty($password)){
+        $errors['password'] = "Required"; 
+      }elseif (strlen((string)$password) <6) {
+        $errors['password'] = "Minimum is 6 charachters";}
+
+  # Validate address
+    if(empty($address)){
+        $errors['address']  = "Required"; 
+    }elseif (strlen($address)==10) {
+        $errors['address'] = "Address must be 10 charachters";
+      }
+      # VALIDATE gender 
+    if(empty($gender)){
+        $errors['gender']  = "Required"; 
+      }
+
+      # Validate Linkedin URL
+      if(empty($linkedin)){
+        $errors['linkedinUrl'] = "Required"; 
+      } elseif (!filter_var($linkedin, FILTER_VALIDATE_URL)) {
+        $errors['linkedinUrl'] = "Invalid URL format";
+      }
+      # Validate file
+      if (!empty($_FILES['file']['name'])) {
+
+        $name    = $_FILES['file']['name'];
+        $temPath = $_FILES['file']['tmp_name'];
+        //$size    = $_FILES['file']['size'];
+        $type    = $_FILES['file']['type'];
+    
+
+        $typesInfo  =  explode('/', $type);   // convert string to array ... 
+        $extension  =  strtolower( end($typesInfo));      // get last element in array .... 
+
+        $allowedExtension = ['pdf'];   // allowed Extension PDF
+
+        if (in_array($extension, $allowedExtension)) {
+
+            # Create Final Name ... 
+            //$FinalName = time() . rand() . '.' . $extension;
+
+            $disPath = 'formFiles/'; //. $FinalName;
+
+            if (move_uploaded_file($temPath, $disPath)) {
+
+                echo 'CV Uploaded';
+            } else {
+                echo 'Error, Please Try Again';
+            }
+        } else {
+            echo 'Must be .PDF Extension';
+        }
+    } else {
+        echo 'File is Required';
+    }
+    
+    # Check ERRORS 
+    if(count($errors) > 0 ){
+
+        foreach($errors as $key => $value){
+            echo '- '.$key.' : '.$value.'<br>'.'<br>';  
+        }
+
+     }else{
+         echo '<br> Succefully Registered';
+     } 
+}
+
+?>
+<form action="<?php echo $_SERVER['PHP_SELF'];?>"   method="POST"">
+<br><br><br>
+<label>Information Form</label>
+<br><br>
+<label>Name: <input type="text" name="name"></label>
+<br><br>
+<label>Email: <input type="text" name="email"></label>
+<br><br>
+<label>Password: <input type="password" name="password"></label>
+<br><br>
+<label>Address: <input type="text" name="address"></label>
+<br><br>
+<label>Gender:</label>
+<input type="radio" name="gender" value="female">Female
+<input type="radio" name="gender" value="male">Male
+<br><br>
+<label>Linkedin: <input type="text" name="linkedinUrl"></label>
+<br><br>
+<label>CV: <input type="file" name="file"></label>
+<br><br><br>
+<input type="submit" value="Submit" onclick="validation()" formtarget="_blank">
+</form> 
